@@ -269,6 +269,7 @@ function Show-Msg {
 function New-Button {
     param(
         [bool]$AutoSize = $true,
+        [bool]$Enabled = $true,
         [float]$FontSize = 8.25,
         [int]$LocationX = 0,
         [int]$LocationY = 0,
@@ -297,6 +298,8 @@ function New-Button {
         $Button.Size = New-Object System.Drawing.Size($SizeX, $SizeY);
     }
 
+    $Button.Enabled = $Enabled;
+
     $Button.Location = New-Object System.Drawing.Point($LocationX,$LocationY)
 
     $Button.Font = New-Object System.Drawing.Font($Button.Font.FontFamily, $FontSize);
@@ -313,6 +316,8 @@ function New-CheckBox {
     param(
         [bool]$AutoCheck = $true,
         [bool]$AutoSize = $true,
+        [bool]$Checked = $false,
+        [bool]$Enabled = $true,
         [float]$FontSize = 8.25,
         [int]$LocationX = 0,
         [int]$LocationY = 0,
@@ -327,6 +332,10 @@ function New-CheckBox {
     $CheckBox = New-Object System.Windows.Forms.CheckBox;
 
     $CheckBox.AutoCheck = $AutoCheck;
+
+    $CheckBox.Checked = $Checked;
+
+    $CheckBox.Enabled = $Enabled;
 
     if ($OnClick -ne $false) {
         $CheckBox.Add_Click($OnClick);
@@ -879,7 +888,8 @@ function New-TabControl {
         [int]$SizeY = 0,
         [int]$TabIndex = 0,
         [string]$Alignment = "Top",
-        [string]$Dock = "Fill"
+        [string]$Dock = "Fill",
+        [ScriptBlock]$OnSelectChange = {}
     )
 
     $TabControl = New-Object System.Windows.Forms.TabControl
@@ -890,10 +900,12 @@ function New-TabControl {
 
     $TabControl.Alignment = $Alignment;
     $TabControl.Location = New-Object System.Drawing.Size($LocationX,$LocationY);
-    $TabControl.Multiline = $Multiline
-    $TabControl.SelectedIndex = $SelectedIndex
-    $TabControl.TabIndex = $TabIndex
-    $TabControl.Dock = $Dock
+    $TabControl.Multiline = $Multiline;
+    $TabControl.SelectedIndex = $SelectedIndex;
+    $TabControl.TabIndex = $TabIndex;
+    $TabControl.Dock = $Dock;
+
+    $TabControl.Add_SelectedIndexChanged($OnSelectChange);
 
     if ($AutoSize -eq $true) {
         $TabControl.AutoSize = $true;
