@@ -38,7 +38,7 @@ function SearchLocalUsers() {
     $TabControl = New-TabControl -TabPages @($TabPage1)
 
     $Panel = New-Panel -panelItems @($TabControl) -AutoSize $false -SizeX $form.Width -SizeY ($form.Height - 70) -BorderStyle None
-    $Panel.Padding = "6, 6, 6, 6"
+    $Panel.Padding = "5, 5, 2, 5"
     $form.Controls.Add($Panel)
     $form.Controls.Add($Button2)
     $form.Controls.Add($Button3)
@@ -99,17 +99,87 @@ function Radios {
 function LocalUserGrid {
     $data = Get-LocalUser
     $DataGridView = New-DataGridView -Data $data -ReadOnly $false -Properties PasswordRequired, PrincipalSource, ObjectClass
-    $form = New-Form -Title "DataGridView Example" -SizeY 250 -SizeX 550 -Controls @($DataGridView) -FormBorderStyle Sizable -Maximizable $true -Topmost $true
+    $form = New-Form -Title "DataGridView Example" -SizeX 550 -SizeY 250 -Controls @($DataGridView) -FormBorderStyle Sizable -Maximizable $true -Topmost $true
 
     Enable-DataGridEditHotKeys -Form $form -DataGridView $DataGridView
 
     $form.ShowDialog() | Out-Null
 
     $test = Convert-DataGridViewToPSCustomObject -DataGridView $DataGridView
-    $test
+    $test | Format-Table
+}
+
+function SysprepDemo {
+    $FormWidth = 445
+    $FormHeight = 285
+    $script:ActiveTab = 0
+
+    # Computer Tab Start
+    $ComputernameTabText1 = New-Label -Text "First computer setup. (Non-functional Demo)" -LocationX 5 -LocationY 10 -FontSize 10
+    $ComputernameTabText2 = New-Label -Text "Enter computername:" -LocationX 5 -LocationY 50
+    $ComputernameTabInput = New-Textbox -LocationX 5 -LocationY 70 -SizeX ($FormWidth - 35) -Text $env:computername -FontSize 12
+
+    $ComputernameTabNext = New-Button -Text "Next" -OnClick {
+        $script:ActiveTab = 1;
+        $TabControl.SelectTab($script:ActiveTab);
+    } -LocationX ($FormWidth - 110) -LocationY ($FormHeight - 100)
+
+    $ComputernameTabCancel = New-Button -Text "Cancel" -OnClick {$this.FindForm().Close()} -LocationX ($FormWidth - 195) -LocationY ($FormHeight - 100)
+    $ComputernameTab = New-TabPage -Text "Computername" -Controls @($ComputernameTabText1, $ComputernameTabText2, $ComputernameTabInput, $ComputernameTabNext, $ComputernameTabCancel)
+    # Computer Tab End
+
+    # Software Tab Start
+    $SoftwareText1 = New-Label -Text "Select software to install: (Non-functional demo)" -LocationX 5 -LocationY 10
+    $SoftwareOffice = New-CheckBox -Text "Office M365" -LocationX 5 -LocationY 30 -Checked $true
+    $SoftwareVPN = New-CheckBox -Text "VPN Software" -LocationX 5 -LocationY 50 -Checked $true
+    $SoftwareAntivirus = New-CheckBox -Text "Antivirus Software" -LocationX 5 -LocationY 70 -Enabled $false -Checked $true
+
+    $SoftwareInstall = New-Button -Text "Install" -OnClick {
+        $script:ActiveTab = 2;
+        $TabControl.SelectTab($script:ActiveTab);
+        $i = 0;
+        if ($SoftwareOffice.Checked) {$i++}
+        if ($SoftwareVPN.Checked) {$i++}
+        if ($SoftwareAntivirus.Checked) {$i++}
+        $InstallProgressbar.Maximum = $i;
+
+        $InstallTimer.Start();
+    } -LocationX ($FormWidth - 110) -LocationY ($FormHeight - 100)
+
+    $SoftwareTab = New-TabPage -Text "Software" -Controls @($SoftwareText1, $SoftwareOffice, $SoftwareVPN, $SoftwareAntivirus, $SoftwareInstall)
+    # Software Tab End
+
+    # Install Tab Start
+    $InstallTimer = New-Timer -OnTick {
+        if ($InstallProgressbar.Value -lt $InstallProgressbar.Maximum) {
+            $InstallProgressbar.PerformStep();
+        } else {
+            $InstallTimer.Stop();
+            $InstallEnd.Enabled = $true;
+            $InstallText1.Text = "Click Finish to close this window"
+        }
+    } -Interval 3000
+
+    $InstallText1 = New-Label -Text "Please wait for software to install.." -LocationX 5 -LocationY 10
+    $InstallProgressbar = New-ProgressBar -Step 1 -LocationX 5 -LocationY 50 -SizeX ($FormWidth - 35)
+    $InstallEnd = New-Button -Text "Finish" -LocationX ($FormWidth - 110) -LocationY ($FormHeight - 100) -OnClick {$this.FindForm().Close();} -Enabled $false
+    $InstallTab = New-TabPage -Text "Software Setup" -Controls @($InstallText1, $InstallProgressbar, $InstallEnd)
+    # Install Tab End
+
+    $TabControl = New-TabControl -TabPages @($ComputernameTab, $SoftwareTab, $InstallTab) -OnSelectChange {
+        $TabControl.SelectTab($script:ActiveTab);
+    }
+
+    $form = New-Form -Title "First Setup" -Controls @($TabControl) -SizeX $FormWidth -SizeY $FormHeight -Topmost $true -Icon "C:\Windows\System32\mmc.exe"
+    $form.ShowDialog() | Out-Null
+
+    if ($InstallTimer.Enabled) {
+        $InstallTimer.Stop();
+    }
 }
 
 SearchLocalUsers
 ProgressBarSimulation
 Radios
 LocalUserGrid
+SysprepDemo
