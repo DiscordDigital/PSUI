@@ -2,6 +2,8 @@ Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 Add-Type -AssemblyName PresentationFramework
 
+[System.Windows.Forms.Application]::EnableVisualStyles();
+
 <#
   .Function Name : Convert-DataGridViewToPSCustomObject
   .Description   : Converts a DataGridView object to a PSCustomObject
@@ -498,7 +500,6 @@ function New-Form {
         $Icon = "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
     )
 
-    [System.Windows.Forms.Application]::EnableVisualStyles();
     $form = New-Object System.Windows.Forms.Form;
 
     foreach ($Control in $Controls) {
@@ -966,6 +967,7 @@ function New-Textbox {
         [bool]$AutoSize = $false,
         [bool]$acceptsReturn = $false,
         [bool]$acceptsTab = $true,
+        [bool]$Password = $false,
         [bool]$Multiline = $false,
         [int]$SizeX = 100,
         [int]$SizeY = 20,
@@ -973,6 +975,7 @@ function New-Textbox {
         [int]$LocationY = 0,
         [float]$FontSize = 8.25,
         [string]$FontFamily = "Microsoft Sans Serif",
+        [string]$HiddenChar = "*",
         [ScriptBlock]$OnEnter = {},
         [System.Windows.Forms.DockStyle]$Dock = "None",
         [System.Windows.Forms.ScrollBars]$ScrollBars = "Vertical",
@@ -981,6 +984,10 @@ function New-Textbox {
     )
 
     $TextBox = New-Object System.Windows.Forms.TextBox
+
+    if ($Password -eq $true) {
+        $TextBox.PasswordChar = $HiddenChar;
+    }
 
     $TextBox.AcceptsReturn = $acceptsReturn;
     $TextBox.AcceptsTab = $acceptsTab;
