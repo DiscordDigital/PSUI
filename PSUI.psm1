@@ -584,6 +584,7 @@ function New-GroupBox {
 function New-Label {
     param(
         [bool]$AutoSize = $true,
+        [bool]$Center = $false,
         [int]$LocationX = 0,
         [int]$LocationY = 0,
         [int]$SizeX = 0,
@@ -593,6 +594,7 @@ function New-Label {
         [string]$FontColorHex = "",
         [string]$FontName = "Microsoft Sans Serif",
         [string]$Text,
+        [System.Drawing.ContentAlignment]$TextAlign = "TopLeft",
         [System.Drawing.FontStyle]$FontFormat = "Regular",
         [System.Windows.Forms.BorderStyle]$BorderStyle = "None"
     )
@@ -615,6 +617,12 @@ function New-Label {
         if ($FontColor -ne "Black") {
             $label.ForeColor = [System.Drawing.Color]::FromName($FontColor)
         }
+    }
+
+    if ($Center -eq $false) {
+        $label.TextAlign = $TextAlign
+    } else {
+        $label.TextAlign = "MiddleCenter"
     }
 
     $label.Font = $Font;
